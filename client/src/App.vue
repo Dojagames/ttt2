@@ -46,10 +46,15 @@
             return;
           }
 
+          if(this.fieldToPlay != field && this.fieldToPlay != -1){
+            return;
+          }
+
           this.turn ? this.content[field][index] = "X" : this.content[field][index] = "O";
 
           this.turn = !this.turn;
           // calculate the winner
+          this.fieldToPlay = index;
           this.calculateWinner(field);
           this.calculateTie(field)
         } else {
@@ -93,9 +98,8 @@
             this.game[field] = this.content[field][firstIndex];
             this.fieldToPlay = -1;
             this.calculateGameWinner();
-            this.calculateGameTie(); //calculate game Draw
-          } else {
-            this.fieldToPlay = field;
+            this.calculateGameTie();
+            //reset visual restrictions
           }
         }
       },
