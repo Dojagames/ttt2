@@ -53,8 +53,13 @@
           this.turn ? this.content[field][index] = "X" : this.content[field][index] = "O";
 
           this.turn = !this.turn;
-          // calculate the winner
-          this.fieldToPlay = index;
+          
+          if(this.game[index] != ""){
+            this.fieldToPlay = -1;
+          } else {
+            this.fieldToPlay = index;
+          }
+         
           this.calculateWinner(field);
           this.calculateTie(field)
         } else {
@@ -96,7 +101,6 @@
                   this.content[field][firstIndex] == this.content[field][thirdIndex] &&
                   this.content[field][firstIndex] != "") {
             this.game[field] = this.content[field][firstIndex];
-            this.fieldToPlay = -1;
             this.calculateGameWinner();
             this.calculateGameTie();
             //reset visual restrictions
@@ -246,8 +250,8 @@
     <div class="container unmarkable">
       <h1>Tic-Tac-Toe</h1>
       <div class="play-area">
-        <div class="wonboard" v-if="game[0] != ''">{{ game[0] }}</div>
-        <div class="smallboard" id="sb0" v-else> <!-- board 0 -->
+        <div class="wonboard sb0" v-if="game[0] != ''">{{ game[0] }}</div>
+        <div class="smallboard sb0" v-else :style="fieldToPlay == 0? 'border-right: 6px solid green; border-bottom: 6px solid green;' : ''"> <!-- board 0 -->
           <div class="block_0 block" @click="draw(0, 0)">{{ content[0][0] }}</div>
           <div class="block_1 block" @click="draw(1, 0)">{{ content[0][1] }}</div>
           <div class="block_2 block" @click="draw(2, 0)">{{ content[0][2] }}</div>
@@ -259,8 +263,8 @@
           <div class="block_8 block" @click="draw(8, 0)">{{ content[0][8] }}</div> 
         </div>
 
-        <div class="wonboard" v-if="game[1] != ''">{{ game[1] }}</div>
-        <div class="smallboard" id="sb1" v-else> <!-- board 1 -->
+        <div class="wonboard sb1" v-if="game[1] != ''">{{ game[1] }}</div>
+        <div class="smallboard sb1" v-else :style="fieldToPlay == 1? 'border-right: 6px solid green; border-bottom: 6px solid green; border-left: 6px solid green;' : ''"> <!-- board 1 -->
           <div class="block_0 block" @click="draw(0, 1)">{{ content[1][0] }}</div>
           <div class="block_1 block" @click="draw(1, 1)">{{ content[1][1] }}</div>
           <div class="block_2 block" @click="draw(2, 1)">{{ content[1][2] }}</div>
@@ -272,8 +276,8 @@
           <div class="block_8 block" @click="draw(8, 1)">{{ content[1][8] }}</div> 
         </div>        
 
-        <div class="wonboard" v-if="game[2] != ''">{{ game[2] }}</div>
-        <div class="smallboard" id="sb2" v-else>  <!-- board 2 -->
+        <div class="wonboard sb2" v-if="game[2] != ''">{{ game[2] }}</div>
+        <div class="smallboard sb2" v-else :style="fieldToPlay == 2? 'border-bottom: 6px solid green; border-left: 6px solid green;' : ''">  <!-- board 2 -->
           <div class="block_0 block" @click="draw(0, 2)">{{ content[2][0] }}</div>
           <div class="block_1 block" @click="draw(1, 2)">{{ content[2][1] }}</div>
           <div class="block_2 block" @click="draw(2, 2)">{{ content[2][2] }}</div>
@@ -285,8 +289,8 @@
           <div class="block_8 block" @click="draw(8, 2)">{{ content[2][8] }}</div>           
         </div>
 
-        <div class="wonboard" v-if="game[3] != ''">{{ game[3] }}</div>
-        <div class="smallboard" id="sb3" v-else>  <!-- board 3 -->
+        <div class="wonboard sb3" v-if="game[3] != ''">{{ game[3] }}</div>
+        <div class="smallboard sb3" v-else :style="fieldToPlay == 3? 'border-right: 6px solid green; border-top: 6px solid green; border-bottom: 6px solid green;  padding-top: 5px' : ''">  <!-- board 3 -->
           <div class="block_0 block" @click="draw(0, 3)">{{ content[3][0] }}</div>
           <div class="block_1 block" @click="draw(1, 3)">{{ content[3][1] }}</div>
           <div class="block_2 block" @click="draw(2, 3)">{{ content[3][2] }}</div>
@@ -298,8 +302,8 @@
           <div class="block_8 block" @click="draw(8, 3)">{{ content[3][8] }}</div>           
         </div>
 
-        <div class="wonboard" v-if="game[4] != ''">{{ game[4] }}</div>
-        <div class="smallboard" id="sb4" v-else>  <!-- board 4 -->
+        <div class="wonboard sb4" v-if="game[4] != ''">{{ game[4] }}</div>
+        <div class="smallboard sb4" v-else :style="fieldToPlay == 4? 'border-right: 6px solid green; border-bottom: 6px solid green; border-left: 6px solid green; border-top: 6px solid green;  padding-top: 5px' : ''">  <!-- board 4 -->
           <div class="block_0 block" @click="draw(0, 4)">{{ content[4][0] }}</div>
           <div class="block_1 block" @click="draw(1, 4)">{{ content[4][1] }}</div>
           <div class="block_2 block" @click="draw(2, 4)">{{ content[4][2] }}</div>
@@ -311,8 +315,8 @@
           <div class="block_8 block" @click="draw(8, 4)">{{ content[4][8] }}</div>           
         </div>
 
-        <div class="wonboard" v-if="game[5] != ''">{{ game[5] }}</div>
-        <div class="smallboard" id="sb5" v-else>  <!-- board 5 -->
+        <div class="wonboard sb5" v-if="game[5] != ''">{{ game[5] }}</div>
+        <div class="smallboard sb5" v-else :style="fieldToPlay == 5? 'border-top: 6px solid green; border-bottom: 6px solid green; border-left: 6px solid green; padding-top: 5px' : ''">  <!-- board 5 -->
           <div class="block_0 block" @click="draw(0, 5)">{{ content[5][0] }}</div>
           <div class="block_1 block" @click="draw(1, 5)">{{ content[5][1] }}</div>
           <div class="block_2 block" @click="draw(2, 5)">{{ content[5][2] }}</div>
@@ -324,8 +328,8 @@
           <div class="block_8 block" @click="draw(8, 5)">{{ content[5][8] }}</div>           
         </div>
 
-        <div class="wonboard" v-if="game[6] != ''">{{ game[6] }}</div>
-        <div class="smallboard" id="sb6" v-else>  <!-- board 6 -->
+        <div class="wonboard sb6" v-if="game[6] != ''">{{ game[6] }}</div>
+        <div class="smallboard sb6" v-else :style="fieldToPlay == 6? 'border-top: 6px solid green; border-right: 6px solid green; padding-top: 7px' : ''">  <!-- board 6 -->
           <div class="block_0 block" @click="draw(0, 6)">{{ content[6][0] }}</div>
           <div class="block_1 block" @click="draw(1, 6)">{{ content[6][1] }}</div>
           <div class="block_2 block" @click="draw(2, 6)">{{ content[6][2] }}</div>
@@ -337,8 +341,8 @@
           <div class="block_8 block" @click="draw(8, 6)">{{ content[6][8] }}</div>           
         </div>
 
-        <div class="wonboard" v-if="game[7] != ''">{{ game[7] }}</div>
-        <div class="smallboard" id="sb7" v-else>  <!-- board 7 -->
+        <div class="wonboard sb7" v-if="game[7] != ''"><h1>{{ game[7] }}</h1></div>
+        <div class="smallboard sb7" v-else :style="fieldToPlay == 7? 'border-top: 6px solid green; border-right: 6px solid green; border-left: 6px solid green; padding-top: 7px' : ''">  <!-- board 7 -->
           <div class="block_0 block" @click="draw(0, 7)">{{ content[7][0] }}</div>
           <div class="block_1 block" @click="draw(1, 7)">{{ content[7][1] }}</div>
           <div class="block_2 block" @click="draw(2, 7)">{{ content[7][2] }}</div>
@@ -350,8 +354,8 @@
           <div class="block_8 block" @click="draw(8, 7)">{{ content[7][8] }}</div>           
         </div>
 
-        <div class="wonboard" v-if="game[8] != ''">{{ game[8] }}</div>
-        <div class="smallboard" id="sb8" v-else>  <!-- board 8 -->
+        <div class="wonboard sb8" v-if="game[8] != ''"><h1>{{ game[8] }}</h1></div>
+        <div class="smallboard sb8" v-else :style="fieldToPlay == 8? 'border-top: 6px solid green; border-left: 6px solid green; padding-top: 7px' : ''">  <!-- board 8 -->
           <div class="block_0 block" @click="draw(0, 8)">{{ content[8][0] }}</div>
           <div class="block_1 block" @click="draw(1, 8)">{{ content[8][1] }}</div>
           <div class="block_2 block" @click="draw(2, 8)">{{ content[8][2] }}</div>
@@ -423,19 +427,19 @@
     padding-bottom: 10px;
   }
 
-  #sb0,#sb1,#sb2,#sb3,#sb4,#sb5{
+  .sb0,.sb1,.sb2,.sb3,.sb4,.sb5{
     border-bottom: 3px solid pink;
   } 
 
-  #sb0,#sb3,#sb6,#sb1,#sb4,#sb7{
+  .sb0,.sb3,.sb6,.sb1,.sb4,.sb7{
     border-right: 3px solid pink;
   }
 
-  #sb6,#sb7,#sb8,#sb3,#sb4,#sb5{
+  .sb6,.sb7,.sb8,.sb3,.sb4,.sb5{
     border-top: 3px solid pink;
   } 
 
-  #sb2,#sb5,#sb8,#sb1,#sb4,#sb7{
+  .sb2,.sb5,.sb8,.sb1,.sb4,.sb7{
     border-left: 3px solid pink;
   }
 
@@ -542,7 +546,21 @@
 
 
 
+  .wonboard{
+    width: 233.33px;
+    height: 233.33px;
 
+  }
+  .wonboard h1 {
+    text-align: center;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  #playField{
+    border: 3px solid green;
+  }
 
 
   .unmarkable{
