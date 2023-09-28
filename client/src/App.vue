@@ -1,6 +1,6 @@
 <script>
   import {io} from 'socket.io-client'
-  const socket = io('https://backend-ttt.jonx.dev');
+  const socket = io('localhost:3010');
 
   export default {
     name: 'App',
@@ -11,7 +11,22 @@
         view: "select",
         singleplayer: false,
          
-        content: ["", "", "", "", "", "", "", "", ""],
+        content: [
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", ""],
+        ],
+        game: ["", "", "", "", "", "", "", "", ""],
+
+        fieldToPlay: -1, // -1 = free, 0-8 = field
+
+
         turn: true,
         isOver: false,
         winner: null,
@@ -25,24 +40,24 @@
       }
     },
     methods: {
-      draw(index, drawFromOther = false) {
+      draw(index, field, drawFromOther = false) {
         if(this.singleplayer){
-          if(this.content[index] != "" || this.isOver){
+          if(this.content[field][index] != "" || this.isOver){
             return;
           }
 
-          this.turn ? this.content[index] = "X" : this.content[index] = "O";
+          this.turn ? this.content[field][index] = "X" : this.content[field][index] = "O";
 
           this.turn = !this.turn;
           // calculate the winner
-          this.calculateWinner();
-          this.calculateTie()
+          this.calculateWinner(field);
+          this.calculateTie(field)
         } else {
-          if(this.content[index] != "" || this.isOver || !this.yourTurn){
+          if(this.content[field][index] != "" || this.isOver || !this.yourTurn){
             return;
           }
 
-          this.turn ? this.content[index] = "X" : this.content[index] = "O";
+          this.turn ? this.content[field][index] = "X" : this.content[field][index] = "O";
 
           if (!drawFromOther) {
             socket.emit("play", index);
@@ -52,14 +67,14 @@
 
           this.turn = !this.turn;
           // calculate the winner
-          this.calculateWinner();
-          this.calculateTie()
+          this.calculateWinner(field);
+          this.calculateTie(field)
         }
         
       },
 
 
-      calculateWinner() {
+      calculateWinner(field) {
         const WIN_CONDITIONS = [
           // rows
           [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -72,19 +87,54 @@
           let firstIndex = WIN_CONDITIONS[i][0];
           let secondIndex = WIN_CONDITIONS[i][1];
           let thirdIndex = WIN_CONDITIONS[i][2];
-          if(this.content[firstIndex] == this.content[secondIndex] &&
-                  this.content[firstIndex] == this.content[thirdIndex] &&
-                  this.content[firstIndex] != "") {
-            this.isOver = true;
-            this.winner = this.content[firstIndex];
+          if(this.content[field][firstIndex] == this.content[field][secondIndex] &&
+                  this.content[field][firstIndex] == this.content[field][thirdIndex] &&
+                  this.content[field][firstIndex] != "") {
+            this.game[field] = this.content[field][firstIndex];
+            this.fieldToPlay = -1;
+            this.calculateGameWinner();
+            this.calculateGameTie(); //calculate game Draw
+          } else {
+            this.fieldToPlay = field;
           }
         }
       },
 
 
-      calculateTie(){
+      calculateTie(_field){
         for (let i = 0 ; i<= 8 ; i++) {
-          if(this.content[i] == "") {
+          if(this.content[_field][i] == "") {
+            return;
+          }
+        }
+        this.isTie = true;
+      },
+
+      calculateGameWinner(){
+        const WIN_CONDITIONS = [
+          // rows
+          [0, 1, 2], [3, 4, 5], [6, 7, 8],
+          // cols
+          [0, 3, 6], [1, 4, 7], [2, 5, 8],
+          // diagonals
+          [0, 4, 8], [2, 4, 6]
+        ];
+        for (let i = 0; i < WIN_CONDITIONS.length; i++) {
+          let firstIndex = WIN_CONDITIONS[i][0];
+          let secondIndex = WIN_CONDITIONS[i][1];
+          let thirdIndex = WIN_CONDITIONS[i][2];
+          if(this.game[firstIndex] == this.game[secondIndex] &&
+                  this.game[firstIndex] == this.game[thirdIndex] &&
+                  this.game[firstIndex] != "") {
+            this.isOver = true;
+            this.winner = this.game[firstIndex];
+          }
+        }
+      },
+
+      calculateGameTie(){
+        for (let i = 0 ; i<= 8 ; i++) {
+          if(this.games[i] == "") {
             return;
           }
         }
@@ -94,12 +144,15 @@
       
       resetBoard(_self) {
         if(_self) {socket.emit("reset")}
-        for (let i=0; i<= 8; i++) {
-          this.content[i] = ""
-          this.isOver = false;
-          this.winner = null
-          this.isTie = false
+        for (let i=0; i < 9; i++) {
+          for(let j=0; j < 9; j++){
+            this.content[j][i] = "";
+          }
+          this.game[i] = "";
         }
+        this.isOver = false;
+        this.winner = null
+        this.isTie = false
       },
 
 
@@ -189,15 +242,125 @@
     <div class="container unmarkable">
       <h1>Tic-Tac-Toe</h1>
       <div class="play-area">
-        <div id="block_0" class="block" @click="draw(0)">{{ content[0] }}</div>
-        <div id="block_1" class="block" @click="draw(1)">{{ content[1] }}</div>
-        <div id="block_2" class="block" @click="draw(2)">{{ content[2] }}</div>
-        <div id="block_3" class="block" @click="draw(3)">{{ content[3] }}</div>
-        <div id="block_4" class="block" @click="draw(4)">{{ content[4] }}</div>
-        <div id="block_5" class="block" @click="draw(5)">{{ content[5] }}</div>
-        <div id="block_6" class="block" @click="draw(6)">{{ content[6] }}</div>
-        <div id="block_7" class="block" @click="draw(7)">{{ content[7] }}</div>
-        <div id="block_8" class="block" @click="draw(8)">{{ content[8] }}</div> 
+        <div class="wonboard" v-if="game[0] != ''">{{ game[0] }}</div>
+        <div class="smallboard" id="sb0" v-else> <!-- board 0 -->
+          <div class="block_0 block" @click="draw(0, 0)">{{ content[0][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 0)">{{ content[0][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 0)">{{ content[0][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 0)">{{ content[0][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 0)">{{ content[0][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 0)">{{ content[0][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 0)">{{ content[0][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 0)">{{ content[0][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 0)">{{ content[0][8] }}</div> 
+        </div>
+
+        <div class="wonboard" v-if="game[1] != ''">{{ game[1] }}</div>
+        <div class="smallboard" id="sb1" v-else> <!-- board 1 -->
+          <div class="block_0 block" @click="draw(0, 1)">{{ content[1][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 1)">{{ content[1][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 1)">{{ content[1][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 1)">{{ content[1][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 1)">{{ content[1][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 1)">{{ content[1][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 1)">{{ content[1][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 1)">{{ content[1][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 1)">{{ content[1][8] }}</div> 
+        </div>        
+
+        <div class="wonboard" v-if="game[2] != ''">{{ game[2] }}</div>
+        <div class="smallboard" id="sb2" v-else>  <!-- board 2 -->
+          <div class="block_0 block" @click="draw(0, 2)">{{ content[2][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 2)">{{ content[2][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 2)">{{ content[2][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 2)">{{ content[2][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 2)">{{ content[2][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 2)">{{ content[2][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 2)">{{ content[2][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 2)">{{ content[2][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 2)">{{ content[2][8] }}</div>           
+        </div>
+
+        <div class="wonboard" v-if="game[3] != ''">{{ game[3] }}</div>
+        <div class="smallboard" id="sb3" v-else>  <!-- board 3 -->
+          <div class="block_0 block" @click="draw(0, 3)">{{ content[3][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 3)">{{ content[3][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 3)">{{ content[3][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 3)">{{ content[3][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 3)">{{ content[3][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 3)">{{ content[3][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 3)">{{ content[3][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 3)">{{ content[3][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 3)">{{ content[3][8] }}</div>           
+        </div>
+
+        <div class="wonboard" v-if="game[4] != ''">{{ game[4] }}</div>
+        <div class="smallboard" id="sb4" v-else>  <!-- board 4 -->
+          <div class="block_0 block" @click="draw(0, 4)">{{ content[4][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 4)">{{ content[4][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 4)">{{ content[4][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 4)">{{ content[4][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 4)">{{ content[4][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 4)">{{ content[4][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 4)">{{ content[4][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 4)">{{ content[4][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 4)">{{ content[4][8] }}</div>           
+        </div>
+
+        <div class="wonboard" v-if="game[5] != ''">{{ game[5] }}</div>
+        <div class="smallboard" id="sb5" v-else>  <!-- board 5 -->
+          <div class="block_0 block" @click="draw(0, 5)">{{ content[5][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 5)">{{ content[5][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 5)">{{ content[5][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 5)">{{ content[5][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 5)">{{ content[5][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 5)">{{ content[5][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 5)">{{ content[5][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 5)">{{ content[5][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 5)">{{ content[5][8] }}</div>           
+        </div>
+
+        <div class="wonboard" v-if="game[6] != ''">{{ game[6] }}</div>
+        <div class="smallboard" id="sb6" v-else>  <!-- board 6 -->
+          <div class="block_0 block" @click="draw(0, 6)">{{ content[6][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 6)">{{ content[6][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 6)">{{ content[6][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 6)">{{ content[6][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 6)">{{ content[6][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 6)">{{ content[6][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 6)">{{ content[6][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 6)">{{ content[6][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 6)">{{ content[6][8] }}</div>           
+        </div>
+
+        <div class="wonboard" v-if="game[7] != ''">{{ game[7] }}</div>
+        <div class="smallboard" id="sb7" v-else>  <!-- board 7 -->
+          <div class="block_0 block" @click="draw(0, 7)">{{ content[7][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 7)">{{ content[7][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 7)">{{ content[7][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 7)">{{ content[7][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 7)">{{ content[7][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 7)">{{ content[7][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 7)">{{ content[7][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 7)">{{ content[7][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 7)">{{ content[7][8] }}</div>           
+        </div>
+
+        <div class="wonboard" v-if="game[8] != ''">{{ game[8] }}</div>
+        <div class="smallboard" id="sb8" v-else>  <!-- board 8 -->
+          <div class="block_0 block" @click="draw(0, 8)">{{ content[8][0] }}</div>
+          <div class="block_1 block" @click="draw(1, 8)">{{ content[8][1] }}</div>
+          <div class="block_2 block" @click="draw(2, 8)">{{ content[8][2] }}</div>
+          <div class="block_3 block" @click="draw(3, 8)">{{ content[8][3] }}</div>
+          <div class="block_4 block" @click="draw(4, 8)">{{ content[8][4] }}</div>
+          <div class="block_5 block" @click="draw(5, 8)">{{ content[8][5] }}</div>
+          <div class="block_6 block" @click="draw(6, 8)">{{ content[8][6] }}</div>
+          <div class="block_7 block" @click="draw(7, 8)">{{ content[8][7] }}</div>
+          <div class="block_8 block" @click="draw(8, 8)">{{ content[8][8] }}</div>           
+        </div>
+
+
+      
       </div>
 
       <h2 id="winner" v-if="isOver"> Winner is {{winner}} </h2>
@@ -237,19 +400,52 @@
   }
   .play-area {
     display: grid;
-    width: 300px;
-    height: 300px;
+    width: 700px;
+    height: 700px;
     grid-template-columns: auto auto auto;
   }
+  .smallboard{
+    display: flex;
+    width: 233.33px;
+    height: 233.33px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 3rem;
+    font-weight: bold;
+    /* border: 4px solid rgb(255, 0, 157); */
+    transition: background 0.2s ease-in-out;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  #sb0,#sb1,#sb2,#sb3,#sb4,#sb5{
+    border-bottom: 3px solid pink;
+  } 
+
+  #sb0,#sb3,#sb6,#sb1,#sb4,#sb7{
+    border-right: 3px solid pink;
+  }
+
+  #sb6,#sb7,#sb8,#sb3,#sb4,#sb5{
+    border-top: 3px solid pink;
+  } 
+
+  #sb2,#sb5,#sb8,#sb1,#sb4,#sb7{
+    border-left: 3px solid pink;
+  }
+
+ 
+
   .block {
     display: flex;
-    width: 100px;
-    height: 100px;
+    width: 70px;
+    height:70px;
     align-items: center;
     justify-content: center;
     font-size: 3rem;
     font-weight: bold;
-    border: 3px solid rgb(255, 255, 255);
+    border: 2px solid rgb(255, 255, 255);
     transition: background 0.2s ease-in-out;
   }
   .block:hover {
@@ -265,24 +461,24 @@
   .win:hover {
     background: #0ff30f;
   }
-  #block_0,
-  #block_1,
-  #block_2 {
+  .block_0,
+  .block_1,
+  .block_2 {
     border-top: none;
   }
-  #block_0,
-  #block_3,
-  #block_6 {
+  .block_0,
+  .block_3,
+  .block_6 {
     border-left: none;
   }
-  #block_6,
-  #block_7,
-  #block_8 {
+  .block_6,
+  .block_7,
+  .block_8 {
     border-bottom: none;
   }
-  #block_2,
-  #block_5,
-  #block_8 {
+  .block_2,
+  .block_5,
+  .block_8 {
     border-right: none;
   }
   #game button {
