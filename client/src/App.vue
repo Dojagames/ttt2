@@ -32,7 +32,7 @@
         winner: null,
         isTie: false,
 
-        yourTurn: true,
+        yourTurn: false,
 
         lobbyfull: false,
 
@@ -64,6 +64,10 @@
           this.calculateTie(field)
         } else {
           if(this.content[field][index] != "" || this.isOver || !this.yourTurn){
+            return;
+          }
+
+          if(this.fieldToPlay != field && this.fieldToPlay != -1){
             return;
           }
 
@@ -106,7 +110,7 @@
           let thirdIndex = WIN_CONDITIONS[i][2];
           if(this.content[field][firstIndex] == this.content[field][secondIndex] &&
                   this.content[field][firstIndex] == this.content[field][thirdIndex] &&
-                  this.content[field][firstIndex] != "") {
+                  this.content[field][firstIndex] != "" && this.content[field][firstIndex] != "-") {
             this.game[field] = this.content[field][firstIndex];
             this.calculateGameWinner();
             this.calculateGameTie();
@@ -122,7 +126,7 @@
             return;
           }
         }
-        this.isTie = true;
+        this.game[_field] = "-"
       },
 
       calculateGameWinner(){
@@ -168,6 +172,7 @@
         this.isOver = false;
         this.winner = null
         this.isTie = false
+        this.fieldToPlay = -1;
       },
 
 
@@ -179,6 +184,7 @@
       JoinRoom(){
         socket.emit("joinGame", this.room);
         this.lobbyfull = true;
+        this.yourTurn = true;
       },
 
       CopyToClipboard(txt){
