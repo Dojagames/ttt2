@@ -11,10 +11,10 @@ const io = require('socket.io')(server, {
 io.on('connection', (socket)=> {
     socket.emit("test", "testmsg");
 
-    socket.on("play", index => {
-        console.log("server received", index);
+    socket.on("play", ([index, field]) => {
+        console.log("server received", ([index, field]));
         const currentRoom = Array.from(socket.rooms)[1];
-        socket.to(currentRoom).emit("play", index);
+        socket.to(currentRoom).emit("play", [index, field]);
     });
 
     socket.on("reset", () =>{

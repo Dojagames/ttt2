@@ -70,13 +70,20 @@
           this.turn ? this.content[field][index] = "X" : this.content[field][index] = "O";
 
           if (!drawFromOther) {
-            socket.emit("play", index);
+            socket.emit("play", [index, field]);
             this.yourTurn = false;
           } 
 
 
-          this.turn = !this.turn;
-          // calculate the winner
+          this.turn = !this.turn; 
+          
+          if(this.game[index] != ""){
+            this.fieldToPlay = -1;
+          } else {
+            this.fieldToPlay = index;
+          }
+
+
           this.calculateWinner(field);
           this.calculateTie(field)
         }
@@ -184,10 +191,10 @@
         console.log("received msg from server", msg)
       });
 
-      socket.on("play", (index) => {
-        console.log("received index", index)
+      socket.on("play", ([index, field]) => {
+        console.log("received index", index, field)
         this.yourTurn = true;
-        this.draw(index, true)
+        this.draw(index, field, true)
       });
 
       socket.on("reset", () => {
@@ -246,11 +253,12 @@
   <div id="game" v-else>
     <p style="margin: 15px; position: absolute;" class="clickable" v-if="!singleplayer" @click="CopyToClipboard(room)">Room:{{ room }}</p>
     <p style="margin: 15px; position: absolute; right: 0;" v-if="!singleplayer && !lobbyfull">currently waiting for opponent</p>
+    <p style="margin: 15px; position: absolute; right: 0;" v-else-if="!singleplayer && !yourTurn">waiting for opponents turn</p>
 
     <div class="container unmarkable">
       <h1>Tic-Tac-Toe</h1>
       <div class="play-area">
-        <div class="wonboard sb0" v-if="game[0] != ''">{{ game[0] }}</div>
+        <div class="wonboard sb0" v-if="game[0] != ''"><h1>{{ game[0] }}</h1></div>
         <div class="smallboard sb0" v-else :style="fieldToPlay == 0? 'border-right: 6px solid green; border-bottom: 6px solid green;' : ''"> <!-- board 0 -->
           <div class="block_0 block" @click="draw(0, 0)">{{ content[0][0] }}</div>
           <div class="block_1 block" @click="draw(1, 0)">{{ content[0][1] }}</div>
@@ -263,7 +271,7 @@
           <div class="block_8 block" @click="draw(8, 0)">{{ content[0][8] }}</div> 
         </div>
 
-        <div class="wonboard sb1" v-if="game[1] != ''">{{ game[1] }}</div>
+        <div class="wonboard sb1" v-if="game[1] != ''"><h1>{{ game[1] }}</h1></div>
         <div class="smallboard sb1" v-else :style="fieldToPlay == 1? 'border-right: 6px solid green; border-bottom: 6px solid green; border-left: 6px solid green;' : ''"> <!-- board 1 -->
           <div class="block_0 block" @click="draw(0, 1)">{{ content[1][0] }}</div>
           <div class="block_1 block" @click="draw(1, 1)">{{ content[1][1] }}</div>
@@ -276,7 +284,7 @@
           <div class="block_8 block" @click="draw(8, 1)">{{ content[1][8] }}</div> 
         </div>        
 
-        <div class="wonboard sb2" v-if="game[2] != ''">{{ game[2] }}</div>
+        <div class="wonboard sb2" v-if="game[2] != ''"><h1>{{ game[2] }}</h1></div>
         <div class="smallboard sb2" v-else :style="fieldToPlay == 2? 'border-bottom: 6px solid green; border-left: 6px solid green;' : ''">  <!-- board 2 -->
           <div class="block_0 block" @click="draw(0, 2)">{{ content[2][0] }}</div>
           <div class="block_1 block" @click="draw(1, 2)">{{ content[2][1] }}</div>
@@ -289,7 +297,7 @@
           <div class="block_8 block" @click="draw(8, 2)">{{ content[2][8] }}</div>           
         </div>
 
-        <div class="wonboard sb3" v-if="game[3] != ''">{{ game[3] }}</div>
+        <div class="wonboard sb3" v-if="game[3] != ''"><h1>{{ game[3] }}</h1></div>
         <div class="smallboard sb3" v-else :style="fieldToPlay == 3? 'border-right: 6px solid green; border-top: 6px solid green; border-bottom: 6px solid green;  padding-top: 5px' : ''">  <!-- board 3 -->
           <div class="block_0 block" @click="draw(0, 3)">{{ content[3][0] }}</div>
           <div class="block_1 block" @click="draw(1, 3)">{{ content[3][1] }}</div>
@@ -302,7 +310,7 @@
           <div class="block_8 block" @click="draw(8, 3)">{{ content[3][8] }}</div>           
         </div>
 
-        <div class="wonboard sb4" v-if="game[4] != ''">{{ game[4] }}</div>
+        <div class="wonboard sb4" v-if="game[4] != ''"><h1>{{ game[4] }}</h1></div>
         <div class="smallboard sb4" v-else :style="fieldToPlay == 4? 'border-right: 6px solid green; border-bottom: 6px solid green; border-left: 6px solid green; border-top: 6px solid green;  padding-top: 5px' : ''">  <!-- board 4 -->
           <div class="block_0 block" @click="draw(0, 4)">{{ content[4][0] }}</div>
           <div class="block_1 block" @click="draw(1, 4)">{{ content[4][1] }}</div>
@@ -315,7 +323,7 @@
           <div class="block_8 block" @click="draw(8, 4)">{{ content[4][8] }}</div>           
         </div>
 
-        <div class="wonboard sb5" v-if="game[5] != ''">{{ game[5] }}</div>
+        <div class="wonboard sb5" v-if="game[5] != ''"><h1>{{ game[5] }}</h1></div>
         <div class="smallboard sb5" v-else :style="fieldToPlay == 5? 'border-top: 6px solid green; border-bottom: 6px solid green; border-left: 6px solid green; padding-top: 5px' : ''">  <!-- board 5 -->
           <div class="block_0 block" @click="draw(0, 5)">{{ content[5][0] }}</div>
           <div class="block_1 block" @click="draw(1, 5)">{{ content[5][1] }}</div>
@@ -328,7 +336,7 @@
           <div class="block_8 block" @click="draw(8, 5)">{{ content[5][8] }}</div>           
         </div>
 
-        <div class="wonboard sb6" v-if="game[6] != ''">{{ game[6] }}</div>
+        <div class="wonboard sb6" v-if="game[6] != ''"><h1>{{ game[6] }}</h1></div>
         <div class="smallboard sb6" v-else :style="fieldToPlay == 6? 'border-top: 6px solid green; border-right: 6px solid green; padding-top: 7px' : ''">  <!-- board 6 -->
           <div class="block_0 block" @click="draw(0, 6)">{{ content[6][0] }}</div>
           <div class="block_1 block" @click="draw(1, 6)">{{ content[6][1] }}</div>
