@@ -1,6 +1,6 @@
 <script>
   import {io} from 'socket.io-client'
-  const socket = io('localhost:3010');
+  const socket = io('https://backend-mttt.jonx.dev');
 
   export default {
     name: 'App',
@@ -153,7 +153,7 @@
 
       calculateGameTie(){
         for (let i = 0 ; i<= 8 ; i++) {
-          if(this.games[i] == "") {
+          if(this.game[i] == "") {
             return;
           }
         }
