@@ -1,7 +1,7 @@
 # vue - ultimate tic tac toe
 
 ## Uses
-Frontend: Vue Js
+Frontend: Vue Js <br/>
 
 Backend: Node js / Socket.io
 
