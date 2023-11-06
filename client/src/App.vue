@@ -1,6 +1,6 @@
 <script>
   import {io} from 'socket.io-client'
-  const socket = io('localhost:3010');
+  const socket = io('https://backend-mttt.jonx.dev');
 
   export default {
     data() {
@@ -51,14 +51,16 @@
 
           this.turn = !this.turn;
           
+         
+          this.calculateWinner(field);
+          this.calculateTie(field);
+
           if(this.game[index] != ""){
             this.fieldToPlay = -1;
           } else {
             this.fieldToPlay = index;
           }
-         
-          this.calculateWinner(field);
-          this.calculateTie(field)
+
         } else {
           if(this.content[field][index] != "" || this.isOver || !this.yourTurn){
             return;
@@ -78,17 +80,16 @@
 
           this.turn = !this.turn; 
           
-          if(this.game[index] != ""){
+          this.calculateWinner(field);
+          this.calculateTie(field);
+
+          
+        if(this.game[index] != ""){
             this.fieldToPlay = -1;
           } else {
             this.fieldToPlay = index;
           }
-
-
-          this.calculateWinner(field);
-          this.calculateTie(field)
         }
-        
       },
 
 
@@ -150,7 +151,7 @@
 
       calculateGameTie(){
         for (let i = 0 ; i<= 8 ; i++) {
-          if(this.games[i] == "") {
+          if(this.game[i] == "") {
             return;
           }
         }
@@ -587,14 +588,9 @@
     cursor: pointer;
   }
 
-  @media only screen and (max-width: 600px) {
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 0.5em;
+  @media (orientation: portrait) {
+    *{
+      transform: scale(0.98);
     }
-    h2 {
-      margin-top: 1em;
-      font-size: 1.3rem;
-    }
-  }
+}
 </style>
