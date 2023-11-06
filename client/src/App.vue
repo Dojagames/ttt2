@@ -3,9 +3,6 @@
   const socket = io('localhost:3010');
 
   export default {
-    name: 'App',
-    components: {
-    },
     data() {
       return {
         view: "select",
@@ -144,7 +141,7 @@
           let thirdIndex = WIN_CONDITIONS[i][2];
           if(this.game[firstIndex] == this.game[secondIndex] &&
                   this.game[firstIndex] == this.game[thirdIndex] &&
-                  this.game[firstIndex] != "") {
+                  this.game[firstIndex] != "" && this.game[firstIndex] != "-") {
             this.isOver = true;
             this.winner = this.game[firstIndex];
           }
@@ -194,7 +191,7 @@
 
     created(){
       socket.on("test", (msg) => {
-        console.log("received msg from server", msg)
+        console.log("received msg from server: ", msg)
       });
 
       socket.on("play", ([index, field]) => {

@@ -9,7 +9,7 @@ const io = require('socket.io')(server, {
 
 
 io.on('connection', (socket)=> {
-    socket.emit("test", "testmsg");
+    socket.emit("test", "connected");
 
     socket.on("play", ([index, field]) => {
         console.log("server received", ([index, field]));
