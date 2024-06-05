@@ -13,7 +13,7 @@ io.on('connection', (socket)=> {
 
     socket.on("play", ([index, field]) => {
         console.log("server received", ([index, field]));
-        const currentRoom = Array.from(socket.rooms)[1];
+        const currentRoom = Array.from(socket.rooms)[1];//should be 0???
         socket.to(currentRoom).emit("play", [index, field]);
     });
 
